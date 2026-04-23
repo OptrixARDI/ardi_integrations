@@ -1,0 +1,18 @@
+{
+  "name": "node-red-contrib-optrix-ardi",
+  "version": "0.0.1",
+  "description": "Allows ARDI server access in node-red",
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "ardiserver.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "node-red" : {
+        "nodes": {
+            "ardi-server": "ardiserver.js",
+			"ardi-point": "ardipoint.js"
+        }
+  }
+}

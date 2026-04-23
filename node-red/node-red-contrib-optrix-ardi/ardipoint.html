@@ -1,0 +1,35 @@
+<script type="text/javascript">
+    RED.nodes.registerType('ardi-point',{
+        category: 'function',
+        color: '#a6bbcf',
+        defaults: {
+            name: {value:"asset.property"},
+			server: {value:"", type:"ardi-server"},
+			numeric: {value: false}
+        },
+        inputs: 0,
+        outputs: 1,
+        icon: "file.svg",
+        label: function() {
+            return this.name||"ardi-point";
+        }
+    });
+</script>
+
+<script type="text/html" data-template-name="ardi-point">
+	<div class="form-row">
+        <label for="node-input-server"><i class="fa fa-tag"></i> Server</label>
+        <input type="text" id="node-input-server" placeholder="localhost">
+    </div>
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+	<div class="form-row">        
+        <input type="checkbox" id="node-input-numeric" placeholder="">&nbsp;&nbsp;Numeric
+    </div>
+</script>
+
+<script type="text/html" data-help-name="ardi-point">
+    <p>A node that is sent values from live data</p>
+</script>
