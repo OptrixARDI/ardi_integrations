@@ -1,10 +1,10 @@
-#### ARDI MCP Service
+# ARDI MCP Service
 
 Allows easy integration of ARDI servers into LLMs
 
 NOTE: The ARDI server must have the 'MCP' addon installed and enabled.
 
-### Installing
+## Installing
 
 Copy the .py file into a chosen folder on your host.
 Modify the 'servername' variable to point towards the ARDI server you want to connect to.
@@ -23,21 +23,21 @@ Install the required Python modules into that environment.
 pip install -r requirements.txt
 ```
 
-### Running
+## Running
 
 To run, go to the folder where you installed the script.
 
 Select a port to run your server from. If setting this up on a container or dedicated VM, use port 443 (the standard SSL port). If setting it up on your ARDI server, come up with a random, unused port number instead.
 
-## HTTP
+### HTTP
 
 .mcp/bin/uvicorn ardimcp:app --host 0.0.0.0 --port 443
 
-## HTTPS
+### HTTPS
 
 .mcp/bin/uvicorn ardimcp:app --host 0.0.0.0 --port 443 --ssl-keyfile=<keyfile> --ssl-certfile=<certfile>
 
-## Running as a Daemon
+### Running as a Daemon
 
 To run this is a service on a Linux system, create the following file in your /etc/systemd/system/ folder, updating the paths as required. In this example, we will call the service 'mcp' and make a file named 'mcp.service'.
 
@@ -65,7 +65,7 @@ service mcp start
 service mcp enable
 ```
 
-### Client Configuration
+## Client Configuration
 
 See [[https://ardi.com.au/docs/mcp:welcome]] for a discusson of setting up clients to use the MCP server.
 
