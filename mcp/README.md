@@ -1,16 +1,10 @@
-####ARDI MCP Service
+#### ARDI MCP Service
 
 Allows easy integration of ARDI servers into LLMs
 
 NOTE: The ARDI server must have the 'MCP' addon installed and enabled.
 
-### Installing (Local)
-
-If you will be running the MCP service locally (on the client PC rather than on a server), modify the 'servername' in **ardimcplocal.py** and distribute it to your users.
-
-Clients will require **Python** to be installed, along with the **Requests** library.
-
-### Installing (Streaming/Web-Based)
+### Installing
 
 Copy the .py file into a chosen folder on your host.
 Modify the 'servername' variable to point towards the ARDI server you want to connect to.
