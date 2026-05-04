@@ -1,0 +1,13 @@
+{
+  "mqtt": {
+    "host": "localhost",
+    "port": 1883,
+    "username": "",
+    "password": "",
+    "base_topic": "mcpbridge/myservice",
+    "keepalive": 60,
+    "tls": false
+  },
+  "server": "http://localhost/s/default",
+  "request_timeout": 30
+}

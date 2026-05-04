@@ -70,3 +70,11 @@ service mcp enable
 See [[https://ardi.com.au/docs/mcp:welcome]] for a discusson of setting up clients to use the MCP server.
 
 If running this on your ARDI server (or a server with a running web service), see [[https://ardi.com.au/docs/mcp:proxy]] for details covering how to set up Apache2 as a proxy.
+
+## Bridging
+
+The **mcpbridge.py** script is used when running an ARDI server behind a firewall. You use this script in two locations - on the ARDI server itself in _server_ mode (called the bridge-server), and on an Internet-accessible server (such as a DigitalOcean, AWS or Azure public server) in _client_ mode (called the bridge-client).
+
+This uses an MQTT server as a MCP proxy. An LLM connects to the bridge-client. Tool requests sent to the MQTT server by the bridge-client and read by the bridge-server. The bridge-server then sends the query onto the ARDI server, which responds. The response is sent back to MQTT and from there back to the bridge-client and from there to the LLM.
+
+This gives you online access to MCP data, without exposing the ARDI server to direct online traffic.
