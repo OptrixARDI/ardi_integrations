@@ -5,8 +5,6 @@ MCPBridge - Bridges MCP clients to internal HTTP services via MQTT.
 Usage:
   python mcpbridge.py server --config config.json
   python mcpbridge.py client --config config.json
-
-NOTE: This is an early concept prototype and is not ready for production use
 """
 
 import argparse
@@ -22,6 +20,7 @@ from typing import Any
 import paho.mqtt.client as mqtt
 import requests
 from mcp.server.fastmcp import FastMCP
+from fastapi.middleware.cors import CORSMiddleware
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 log = logging.getLogger(__name__)
@@ -100,6 +99,7 @@ def run_server(config: dict):
     tools = []
     server = config["server"]
 
+    #Compile the list of tools from the ARDI server.
     toollist = requests.get(server+"/mcp/dynamic").json()['tools']
     finaltools = []
     for t in toollist:
@@ -131,6 +131,7 @@ def run_server(config: dict):
     conn.publish(f"{base}/manifest", manifest, retain=True)
     log.info(f"Published manifest with {len(tools)} tool(s) to {base}/manifest")
 
+    #A new request has come in from MQTT, call the URL.
     def on_request(topic: str, payload: dict):
         request_id = payload.get("request_id")
         tool_name = payload.get("tool_name")
@@ -138,6 +139,7 @@ def run_server(config: dict):
 
         log.info(f"Request [{request_id}]: {tool_name}({params})")
 
+        #Find the appropriate tool
         tool_def = tool_map.get(tool_name)
         if tool_def is None:
             result = {
@@ -151,6 +153,7 @@ def run_server(config: dict):
                 method = tool_def.get("method", "GET").upper()
                 timeout = tool_def.get("timeout", 30)
 
+                #Filter the parameters
                 allowed_keys = {p["name"] for p in tool_def.get("parameters", [])}
                 safe_params = {k: v for k, v in params.items() if k in allowed_keys}
 
@@ -167,14 +170,17 @@ def run_server(config: dict):
                 except Exception:
                     body = resp.text
 
+                #Return the result
                 result = {"request_id": request_id, "success": True, "result": body}
                 log.info(f"Response [{request_id}]: HTTP {resp.status_code}")
             except Exception as e:
                 log.error(f"Error calling {tool_name}: {e}")
                 result = {"request_id": request_id, "success": False, "error": str(e)}
 
+        #Publish the result back to MQTT
         conn.publish(f"{base}/response/{request_id}", result)
 
+    #Listen in on MQTT for incoming requests
     conn.subscribe(f"{base}/request/+", on_request)
     log.info(f"Server listening on {base}/request/+")
 
@@ -195,16 +201,19 @@ class MCPBridgeClient:
         self._pending: dict[str, asyncio.Future] = {}
         self._loop: asyncio.AbstractEventLoop | None = None
 
+    #Connect to MQTT
     def connect(self):
         self.conn.connect()
         self.conn.subscribe(f"{self.base}/response/+", self._on_response)
 
+    #Got a response from the server
     def _on_response(self, topic: str, payload: dict):
         request_id = payload.get("request_id")
         if request_id and request_id in self._pending and self._loop:
             future = self._pending.pop(request_id)
             self._loop.call_soon_threadsafe(future.set_result, payload)
 
+    #Send a tool call to MQTT
     async def call_tool(self, tool_name: str, params: dict) -> str:
         self._loop = asyncio.get_running_loop()
 
@@ -247,7 +256,7 @@ _TYPE_MAP = {
     "array": list,
 }
 
-
+# Convert the manifest into an proper MCP toolset
 def build_mcp_from_manifest(manifest: list, bridge: MCPBridgeClient) -> FastMCP:
     mcp = FastMCP("MCPBridge")
 
@@ -280,8 +289,8 @@ def build_mcp_from_manifest(manifest: list, bridge: MCPBridgeClient) -> FastMCP:
 
     return mcp
 
-
-def run_client(config: dict):
+#Create a client (Internet-side) connection, exposing an MCP interface
+def run_client(config: dict, stdio: bool = False):
     bridge = MCPBridgeClient(config)
     bridge.connect()
 
@@ -304,10 +313,26 @@ def run_client(config: dict):
 
     log.info(f"Received manifest with {len(manifest_data)} tool(s)")
 
+    #Here's where some security/token validation might go.
+
     mcp = build_mcp_from_manifest(manifest_data, bridge)
 
-    log.info("Starting MCP server (stdio)")
-    mcp.run(transport="streamable-http")
+    if stdio == True:
+        mcp.run()
+    else:
+        app = mcp.streamable_http_app()
+
+        
+        app.add_middleware(
+            CORSMiddleware,
+            allow_origins=["*"],  # Allows all origins
+            allow_credentials=True,
+            allow_methods=["*"],  # Allows all methods (GET, POST, etc.)
+            allow_headers=["*"],  # Allows all headers
+            expose_headers=["mcp-session-id"]
+        )
+    
+        return app
 
 
 # ─── ENTRY POINT ─────────────────────────────────────────────────────────────
@@ -331,8 +356,11 @@ def main():
     if args.mode == "server":
         run_server(config)
     else:
-        run_client(config)
+        run_client(config,True)
 
 
 if __name__ == "__main__":
     main()
+else:
+    config = load_config('config.json')
+    app = run_client(config,False)

@@ -67,9 +67,9 @@ service mcp enable
 
 ## Client Configuration
 
-See [[https://ardi.com.au/docs/mcp:welcome]] for a discusson of setting up clients to use the MCP server.
+See https://ardi.com.au/docs/mcp:welcome for a discusson of setting up clients to use the MCP server.
 
-If running this on your ARDI server (or a server with a running web service), see [[https://ardi.com.au/docs/mcp:proxy]] for details covering how to set up Apache2 as a proxy.
+If running this on your ARDI server (or a server with a running web service), see https://ardi.com.au/docs/mcp:proxy for details covering how to set up Apache2 as a proxy.
 
 ## Bridging
 
@@ -78,3 +78,15 @@ The **mcpbridge.py** script is used when running an ARDI server behind a firewal
 This uses an MQTT server as a MCP proxy. An LLM connects to the bridge-client. Tool requests sent to the MQTT server by the bridge-client and read by the bridge-server. The bridge-server then sends the query onto the ARDI server, which responds. The response is sent back to MQTT and from there back to the bridge-client and from there to the LLM.
 
 This gives you online access to MCP data, without exposing the ARDI server to direct online traffic.
+
+### Running the Bridge
+
+Install Python and the mcpbridge.py file on both the ARDI server (or a server on the secure network) and on an Internet-accessible system.
+
+Fill in the configuration file with the details of the shared MQTT server. You might also want to add additional auth/validation options to the Python file.
+
+On the secure network, run **mcpbridge.py server --config <configpath>**.
+
+On the internet-facing server, run **uvicorn mcpbridge:app** in the folder that contains both the script and **config.json**.
+
+You should now be able to query servers on the secure network via the bridge on the Internet.
