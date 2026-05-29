@@ -6,9 +6,10 @@ NOTE: The ARDI server must have the 'MCP' addon installed and enabled.
 
 ## Installing
 
-Copy the .py file into a chosen folder on your host.
+Copy the ardimcpd.py file into a chosen folder on your host.
 Modify the 'servername' variable to point towards the ARDI server you want to connect to.
 In the folder with the code, create a virtual Python environment with...
+
 ```
 python -m venv .mcp
 ```
@@ -31,11 +32,11 @@ Select a port to run your server from. If setting this up on a container or dedi
 
 ### HTTP
 
-.mcp/bin/uvicorn ardimcp:app --host 0.0.0.0 --port 443
+.mcp/bin/uvicorn ardimcpd:app --host 0.0.0.0 --port 443
 
 ### HTTPS
 
-.mcp/bin/uvicorn ardimcp:app --host 0.0.0.0 --port 443 --ssl-keyfile=<keyfile> --ssl-certfile=<certfile>
+.mcp/bin/uvicorn ardimcpd:app --host 0.0.0.0 --port 443 --ssl-keyfile=<keyfile> --ssl-certfile=<certfile>
 
 ### Running as a Daemon
 

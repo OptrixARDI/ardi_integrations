@@ -8,6 +8,9 @@ import requests
 import sys
 import traceback
 
+## WARNING: This is the outdated version of the MCP server that used a fixed set of tools.
+## The new version (ardimcpd.py) dynamically loads the list of tools from the ARDI system, so your MCP server is always up-to-date with new changes.
+
 mcp = FastMCP("ARDI MCP Server")
 
 server = "https://demo.optrix.com.au/s/pl/mcp"
